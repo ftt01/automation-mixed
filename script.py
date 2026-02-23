@@ -1,18 +1,11 @@
 import csv
 from datetime import datetime
 from pathlib import Path
-
-
-INPUT_DIR = Path("input")
-OUTPUT_DIR = Path("output")
-
-OUTPUT_DIR.mkdir(exist_ok=True)
-
+import sys
 
 def build_insert_row(timestamp_str):
     timestamp_str = timestamp_str.strip('"')
     dt = datetime.strptime(timestamp_str, "%Y-%m-%d %H:%M:%S")
-
     return [
         "", "",
         "1000",
@@ -24,14 +17,10 @@ def build_insert_row(timestamp_str):
     ]
 
 
-for input_file in INPUT_DIR.glob("*.csv"):
-    output_file = OUTPUT_DIR / input_file.name
-
+def process_file(input_path, output_path):
     previous_timestamp = None
 
-    with input_file.open(newline="") as infile, \
-         output_file.open("w", newline="") as outfile:
-
+    with open(input_path, newline="") as infile, open(output_path, "w", newline="") as outfile:
         reader = csv.reader(infile)
         writer = csv.writer(outfile)
 
@@ -46,3 +35,14 @@ for input_file in INPUT_DIR.glob("*.csv"):
 
             writer.writerow(row)
             previous_timestamp = current_timestamp
+
+
+if __name__ == "__main__":
+    if len(sys.argv) != 3:
+        print("Usage: python script.py <input_file> <output_file>")
+        sys.exit(1)
+
+    input_file = sys.argv[1]
+    output_file = sys.argv[2]
+
+    process_file(input_file, output_file)
