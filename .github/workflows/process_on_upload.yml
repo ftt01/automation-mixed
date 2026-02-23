@@ -1,11 +1,7 @@
-name: Process CSV on Upload
+name: Process All CSVs on Upload
 
 on:
-  workflow_dispatch:
-    inputs:
-      file:
-        description: 'CSV file path relative to repo root (e.g., input/myfile.csv)'
-        required: true
+  workflow_dispatch: # manual trigger only
 
 jobs:
   process:
@@ -20,15 +16,15 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Run script
+      - name: Run script on all input files
         run: |
           mkdir -p output
-          python script.py "${{ github.event.inputs.file }}" "output/processed.csv"
+          python script.py
 
-      - name: Commit processed file
+      - name: Commit processed files
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "actions@github.com"
-          git add output/processed.csv
-          git commit -m "Processed uploaded CSV via Web UI" || echo "No changes"
+          git add output/*.csv
+          git commit -m "Processed all uploaded CSVs via Web UI" || echo "No changes"
           git push

@@ -1,7 +1,6 @@
 import csv
 from datetime import datetime
 from pathlib import Path
-import sys
 
 def build_insert_row(timestamp_str):
     timestamp_str = timestamp_str.strip('"')
@@ -9,13 +8,12 @@ def build_insert_row(timestamp_str):
     return [
         "", "",
         "1000",
-        dt.strftime("%Y"),
-        dt.strftime("%j"),
-        dt.strftime("%H%M"),
-        dt.strftime("%H"),
-        dt.strftime("%M"),
+        dt.strftime("%Y"),   # A = year
+        dt.strftime("%j"),   # B = DOY
+        dt.strftime("%H%M"), # C = HHmm
+        dt.strftime("%H"),   # D = HH
+        dt.strftime("%M"),   # E = mm
     ]
-
 
 def process_file(input_path, output_path):
     previous_timestamp = None
@@ -36,13 +34,15 @@ def process_file(input_path, output_path):
             writer.writerow(row)
             previous_timestamp = current_timestamp
 
+def main():
+    input_dir = Path("input")
+    output_dir = Path("output")
+    output_dir.mkdir(exist_ok=True)
+
+    for file_path in input_dir.glob("*.csv"):
+        output_file = output_dir / file_path.name
+        print(f"Processing {file_path} → {output_file}")
+        process_file(file_path, output_file)
 
 if __name__ == "__main__":
-    if len(sys.argv) != 3:
-        print("Usage: python script.py <input_file> <output_file>")
-        sys.exit(1)
-
-    input_file = sys.argv[1]
-    output_file = sys.argv[2]
-
-    process_file(input_file, output_file)
+    main()
