@@ -30,7 +30,7 @@ jobs:
         zip -r artifacts/processed_files.zip output/*
 
     - name: Upload artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: processed-files
         path: artifacts/processed_files.zip
