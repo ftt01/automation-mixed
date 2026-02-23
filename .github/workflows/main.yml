@@ -1,0 +1,30 @@
+name: Process CSV
+
+on:
+  push:
+    paths:
+      - 'input/*.csv'
+
+jobs:
+  process:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Run script
+        run: python script.py
+
+      - name: Commit output files
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "actions@github.com"
+          git add output/*.csv
+          git commit -m "Auto-processed CSV files" || echo "No changes"
+          git push
