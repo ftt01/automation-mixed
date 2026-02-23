@@ -2,6 +2,18 @@ import csv
 from datetime import datetime
 from pathlib import Path
 
+def is_timestamp(s):
+    """Check if string looks like a timestamp (YYYY-MM-DD HH:MM:SS)."""
+    s = s.strip('"')
+    if len(s) != 19:
+        return False
+    try:
+        datetime.strptime(s, "%Y-%m-%d %H:%M:%S")
+        return True
+    except ValueError:
+        return False
+
+
 def build_insert_row(timestamp_str):
     timestamp_str = timestamp_str.strip('"')
     dt = datetime.strptime(timestamp_str, "%Y-%m-%d %H:%M:%S")
@@ -28,21 +40,23 @@ def process_file(input_path, output_path):
 
             current_timestamp = row[0]
 
-            if previous_timestamp and current_timestamp != previous_timestamp:
-                writer.writerow(build_insert_row(current_timestamp))
+            if is_timestamp(current_timestamp):
+                if previous_timestamp and current_timestamp != previous_timestamp:
+                    writer.writerow(build_insert_row(current_timestamp))
+                previous_timestamp = current_timestamp
 
             writer.writerow(row)
-            previous_timestamp = current_timestamp
 
 def main():
     input_dir = Path("input")
     output_dir = Path("output")
     output_dir.mkdir(exist_ok=True)
 
-    for file_path in input_dir.glob("*.csv"):
-        output_file = output_dir / file_path.name
-        print(f"Processing {file_path} → {output_file}")
-        process_file(file_path, output_file)
+    for pattern in ("*.csv", "*.dat"):
+        for file_path in input_dir.glob(pattern):
+            output_file = output_dir / (file_path.stem + ".csv")
+            print(f"Processing {file_path} → {output_file}")
+            process_file(file_path, output_file)
 
 if __name__ == "__main__":
     main()
