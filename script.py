@@ -41,7 +41,7 @@ def process_file(input_path, output_path):
             current_timestamp = row[0]
 
             if is_timestamp(current_timestamp):
-                if previous_timestamp and current_timestamp != previous_timestamp:
+                if previous_timestamp is None or current_timestamp != previous_timestamp:
                     writer.writerow(build_insert_row(current_timestamp))
                 previous_timestamp = current_timestamp
 
