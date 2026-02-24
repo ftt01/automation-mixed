@@ -1,9 +1,12 @@
-name: Process Uploaded Files
+name: Process Uploaded Files (Temporary)
 
 on:
   push:
     paths:
-      - 'input/**'  # triggers when any file in input/ is added or changed
+      - 'input/**'
+
+permissions:
+  contents: read
 
 jobs:
   process_files:
@@ -11,15 +14,12 @@ jobs:
 
     steps:
     - name: Checkout repo
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: "3.12"
-
-    - name: Install dependencies
-      run: pip install --upgrade pip
 
     - name: Run processing script
       run: python script.py
@@ -35,12 +35,7 @@ jobs:
         name: processed-files
         path: artifacts/processed_files.zip
 
-    - name: Commit and push processed files
-      uses: EndBug/add-and-commit@v9
-      with:
-        author_name: "GitHub Actions"
-        author_email: "actions@github.com"
-        message: "Processed uploaded files"
-        add: "output/*"
-        push: true
-        github_token: ${{ secrets.REPO_PAT }}
+    - name: Clean input and output folders
+      run: |
+        rm -rf input/*
+        rm -rf output/*
