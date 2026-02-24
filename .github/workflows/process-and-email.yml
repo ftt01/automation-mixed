@@ -1,0 +1,45 @@
+name: Process Uploaded Files Individually
+
+on:
+  push:
+    paths:
+      - "input/**"
+
+jobs:
+  process_files:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install --upgrade pip
+
+      - name: Run processing script on all input files
+        run: |
+          mkdir -p output
+          for f in input/*; do
+            python script.py "$f" "output/$(basename "$f")"
+          done
+
+      - name: Send email with attachment
+        run: python send_email.py
+        env:
+          SMTP_SERVER: smtp.gmail.com
+          SMTP_PORT: 587
+          SMTP_USERNAME: ${{ secrets.GMAIL_USERNAME }}
+          SMTP_PASSWORD: ${{ secrets.GMAIL_PASSWORD }}
+          EMAIL_TO: ${{ secrets.EMAIL_TO }}
+
+      - name: Delete input files and reset commits
+        run: |
+          git rm -r --cached input/*
+          rm -rf input/*
+          git commit -m "Cleanup uploaded input files"
+          git push

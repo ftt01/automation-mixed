@@ -1,0 +1,56 @@
+# name: Process Upload and Maintain Rolling Release
+
+# on:
+#   push:
+#     branches:
+#       - uploads
+#     paths:
+#       - 'input/**'
+
+# permissions:
+#   contents: write
+
+# jobs:
+#   process:
+#     runs-on: ubuntu-latest
+
+#     steps:
+#     - name: Checkout uploads branch
+#       uses: actions/checkout@v4
+#       with:
+#         ref: uploads
+
+#     - name: Set up Python
+#       uses: actions/setup-python@v5
+#       with:
+#         python-version: "3.12"
+
+#     - name: Run processing script
+#       run: python script.py
+
+#     - name: Create ZIP archive
+#       run: |
+#         mkdir -p artifacts
+#         zip -r artifacts/processed_files.zip output/*
+
+#     - name: Delete previous rolling release (if exists)
+#       run: |
+#         TAG="rolling-release"
+
+#         # Delete release if exists
+#         gh release delete $TAG --yes || true
+
+#         # Delete tag if exists
+#         git tag -d $TAG || true
+#         git push origin :refs/tags/$TAG || true
+#       env:
+#         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+#     - name: Create rolling release
+#       uses: softprops/action-gh-release@v2
+#       with:
+#         tag_name: rolling-release
+#         name: Latest Processed Files
+#         files: artifacts/processed_files.zip
+#       env:
+#         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

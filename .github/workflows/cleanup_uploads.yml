@@ -1,0 +1,61 @@
+# name: Scheduled Process and Clean
+
+# on:
+#   schedule:
+#     - cron: "*/30 * * * *"   # every 5 minutes
+#   workflow_dispatch:
+
+# permissions:
+#   contents: write
+
+# jobs:
+#   process:
+#     runs-on: ubuntu-latest
+
+#     steps:
+#     - name: Checkout full history
+#       uses: actions/checkout@v4
+#       with:
+#         fetch-depth: 0
+
+#     - name: Set up Python
+#       uses: actions/setup-python@v4
+#       with:
+#         python-version: "3.12"
+
+#     - name: Install dependencies
+#       run: pip install --upgrade pip
+
+#     - name: Run script if input exists
+#       run: |
+#         if [ -d input ] && [ "$(ls -A input)" ]; then
+#           python script.py
+#         else
+#           echo "No input files found."
+#           exit 0
+#         fi
+
+#     - name: Create release with outputs
+#       uses: softprops/action-gh-release@v2
+#       with:
+#         tag_name: processed-${{ github.run_id }}
+#         name: Processed Files ${{ github.run_id }}
+#         files: output/*
+#       env:
+#         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+#     - name: Remove input files from repo
+#       run: |
+#         git rm -r input/*
+#         git commit -m "Remove processed input files"
+
+#     - name: Rewrite history to remove input folder completely
+#       run: |
+#         git filter-branch --force --index-filter \
+#         'git rm -r --cached --ignore-unmatch input' \
+#         --prune-empty --tag-name-filter cat -- --all
+
+#     - name: Force push cleaned history
+#       run: |
+#         git push origin --force --all
+#         git push origin --force --tags

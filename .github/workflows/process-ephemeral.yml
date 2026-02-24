@@ -1,0 +1,74 @@
+# name: Process and Cleanup (Ephemeral)
+
+# on:
+#   push:
+#     paths:
+#       - 'input/**'
+#   workflow_dispatch:
+
+# permissions:
+#   contents: write
+
+# jobs:
+#   process:
+#     runs-on: ubuntu-latest
+
+#     steps:
+#     - name: Checkout repository
+#       uses: actions/checkout@v4
+
+#     - name: Set up Python
+#       uses: actions/setup-python@v4
+#       with:
+#         python-version: "3.12"
+
+#     - name: Install dependencies
+#       run: pip install --upgrade pip
+
+#     - name: Run processing script
+#       run: |
+#         if [ -d input ] && [ "$(ls -A input)" ]; then
+#           python script.py
+#         else
+#           echo "No input files found."
+#           exit 0
+#         fi
+
+#     - name: Zip outputs
+#       run: |
+#         mkdir -p artifacts
+#         zip -r artifacts/processed_files.zip output/*
+
+#     - name: Upload temporary artifact (7 days)
+#       uses: actions/upload-artifact@v4
+#       with:
+#         name: processed-files
+#         path: artifacts/processed_files.zip
+#         retention-days: 7
+
+#     - name: Create temporary release
+#       id: create_release
+#       uses: softprops/action-gh-release@v2
+#       with:
+#         tag_name: temp-${{ github.run_id }}
+#         name: Temporary Processed Files ${{ github.run_id }}
+#         files: artifacts/processed_files.zip
+#       env:
+#         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+#     - name: Delete temporary release
+#       run: |
+#         gh release delete temp-${{ github.run_id }} --yes
+#         git push origin :refs/tags/temp-${{ github.run_id }}
+#       env:
+#         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+#     - name: Clean input folder
+#       run: |
+#         rm -rf input/*
+#         touch input/.keep
+#         git config user.name "github-actions"
+#         git config user.email "actions@github.com"
+#         git add input/.keep
+#         git commit -m "Clean input folder after processing" || echo "Nothing to commit"
+#         git push
